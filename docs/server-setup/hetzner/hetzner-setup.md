@@ -26,7 +26,7 @@ Jetzt erstelle ich einen SSH-Key. Diesen werde ich nachher zum Einloggen benutze
 ssh-keygen -t ed25519
 ```
 
-Dieser Befehl erstellt den privaten und öffentlichen Schlüssel im Ordner Users/<dein-benutzer>/.ssh. Ich habe meine Datei "mde_key1" benannt, und keine Passphrase benutzt, um es zu verschlüsseln.
+Dieser Befehl erstellt den privaten und öffentlichen Schlüssel im Ordner Users/dein-benutzer/.ssh. Ich habe meine Datei "mde_key1" benannt, und keine Passphrase benutzt, um es zu verschlüsseln.
 
 Ich muss meinen öffentlichen Schlüssel auf dem Server kopieren, damit ich überhaupt mit dem privaten Key einloggen kann. Das kann ich hier machen:
 
