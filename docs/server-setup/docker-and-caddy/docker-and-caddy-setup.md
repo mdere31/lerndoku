@@ -1,6 +1,7 @@
 ---
 title: "Docker and Caddy Setup"
 ---
+
 # Docker and Caddy Setup
 
 In this documentation, I will explain how I set up the docker containers and caddy webserver for my server.
@@ -21,20 +22,19 @@ apt install docker-compose
 Now, I will create some folders for my Docker images and Docker-Compose files. I want to be able to access them easily, so I will create the folders in the home directory:
 
 cd /home
-  
-mkdir docker-images
-  
-cd docker-images/
-  
-mkdir docker-compose-files
-  
-cd docker-compose-files/
-  
-mkdir dev               //This will be used to store the Docker-Compose file for the development environment (backend, frontend, database and database management tool)
-mkdir prod              //This will be used to store the Docker-Compose file for the production environment (backend, frontend, database and database management tool)
-mkdir central           //This will be used to store the Docker-Compose file for the Caddy webserver
-mkdir watchtower        //This will be used to store the Docker-Compose file for the Watchtower (auto updating containers with newest images)
 
+mkdir docker-images
+
+cd docker-images/
+
+mkdir docker-compose-files
+
+cd docker-compose-files/
+
+mkdir dev //This will be used to store the Docker-Compose file for the development environment (backend, frontend, database and database management tool)
+mkdir prod //This will be used to store the Docker-Compose file for the production environment (backend, frontend, database and database management tool)
+mkdir central //This will be used to store the Docker-Compose file for the Caddy webserver
+mkdir watchtower //This will be used to store the Docker-Compose file for the Watchtower (auto updating containers with newest images)
 
 All I have to do now is to copy the rest of the configuration files to the server. For that, I use "scp" with my private key for a safe copy (Note that you have to be in the same directory as the file that you want to copy if you want to use these commands as they are):
 

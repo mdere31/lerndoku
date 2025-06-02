@@ -1,6 +1,7 @@
 ---
 title: "Infrastructure Setup"
 ---
+
 # Infrastructure Setup
 
 Nachdem ich meinen Hetzner Server eingerichtet habe, werde ich Docker Images vom Projekt erstellen, damit ich sie als Container auf dem Server ausführen kann.
@@ -61,6 +62,7 @@ ncaleague
 Ich habe zwei Arten von Caddyfiles in meinem Projekt: ein zentrales Caddyfile für Reverse Proxy, und zwei Caddyfiles für Static File Hosting (Production und Development). Das zentrale Caddyfile definiert "headers", und sorgt dafür zusätzliche Sicherheit im HTTP-Response:
 
 ### Caddyfile (central):
+
 ```
 ncaleague.app {
 	handle {
@@ -70,7 +72,7 @@ ncaleague.app {
 	handle /api/* {
 		reverse_proxy ncaleague-backend:3000
 	}
-	
+
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains" // Erzwingt HTTPS für die nächsten 31.536.000 Sekunden (~1 Jahr) und stellt sicher, dass auch alle Subdomains HTTPS verwenden müssen.
         X-Content-Type-Options "nosniff"                                // Verhindert, dass Browser den MIME-Typ des Inhalts „erraten“; stellt sicher, dass Dateien entsprechend ihres deklarierten Content-Types interpretiert werden (z. B. text/html, image/png).
@@ -88,7 +90,7 @@ dev.ncaleague.app {
 	handle /api/* {
 		reverse_proxy ncaleague-backend-dev:3000
 	}
-	
+
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
         X-Content-Type-Options "nosniff"
@@ -100,6 +102,7 @@ dev.ncaleague.app {
 ```
 
 ### Caddyfile (dev and prod):
+
 ```
 :80 {
 	handle {
@@ -117,6 +120,7 @@ dev.ncaleague.app {
 Ich habe für jede Umgebung ein Docker-Compose File geschrieben. Diese beinhalten alle Services für Frontend, Backend, Datenbank und Datenbank-Verwaltungstool (Adminer). Die Datenbanken haben ein Healthcheck, und Backends werden nur dann gestartet, wenn die Datenbanken "healthy" sind und laufen. Die Services sind mit einem Netzwerk miteinander verbunden und können mit den Service-Namen kommunizieren (z.B. db-dev und nicht db_dev, db_dev ist der Container-Name). Falls sie aus irgendeinem Fehler stoppen, werden sie neugestartet. Die Datenbanken und die Backends brauchen Umgebungsvariablen für die Datenbankkonfiguration, und diese holen sie von den ".env"-Dateien. Diese Dateien werden wir noch schreiben und auf dem Server kopieren. Die Frontend-Services brauchen noch zusätzlich zwei Volumes, weil Caddy die Daten persistent speichern muss. Falls diese Daten verloren gehen, muss Caddy immer neue Zertifikate (TLS, damit die Webseite sicher ist, also HTTPS) holen, und ab einer Anzahl von Zertifikaten muss man eine lange Weile warten, bevor man wieder Zertifikaten bekommen kann:
 
 ### docker-compose.yml (dev):
+
 ```
 services:
   db-dev:
@@ -180,6 +184,7 @@ volumes:
 ```
 
 ### docker-compose.yml (prod):
+
 ```
 services:
   db:
@@ -249,6 +254,7 @@ volumes:
 Watchtower schaut immer, ob ein neues Image für einen Container gibt, und aktualisiert den Container, wenn es eine neue Version findet. Man muss dafür die Container-Namen geben, und noch bestimmen, wie oft es überprüfen muss. In meinem Fall, alle 30 Sekunden. Im ".env"-File werden die Login-Daten von Github gespeichert, damit es überhaupt nach neuen Versionen suchen kann:
 
 ### docker-compose.yml:
+
 ```
 services:
   watchtower:
@@ -275,6 +281,7 @@ services:
 Mit diesem Skript werden die Tabellen auf der Datenbank erstellt, und das Backend gestartet:
 
 ### entrypoint.sh:
+
 ```
 #!/bin/bash
 echo 'migrate database'
@@ -290,6 +297,7 @@ bun run serve
 Hier sind die Umgebungsvariablen, ich schreibe nur die Keys hier, da man die Values nicht als Klartext auf einem Repository pushen kann. Die Values kann man aber im Projekt finden:
 
 ### .env.development and .env.production:
+
 ```
 POSTGRES_USER
 POSTGRES_PASSWORD
@@ -298,6 +306,7 @@ DATABASE_URL
 ```
 
 ### .env.watchtower:
+
 ```
 REPO_USER
 REPO_PASS
@@ -314,6 +323,7 @@ WATCHTOWER_REVIVE_STOPPED
 Ich brauche nur noch die Dockerfiles, damit ich die Images bauen kann:
 
 ### Dockerfile_backend (dev):
+
 ```
 FROM node:alpine
 RUN apk --no-cache add ca-certificates wget gcompat bash            //Installiert SSL-Zertifikate, wget (Datei-Download), Bash (Shell) und GNU-Kompatibilität ohne Cache.
@@ -330,6 +340,7 @@ ENTRYPOINT ["/opt/bin/entrypoint"]
 ```
 
 ### Dockerfile_frontend (dev):
+
 ```
 FROM docker-registry-mirror.netcetera.com/node:21 AS build
 COPY ncaleague-frontend/ /ncaleague-frontend/
@@ -344,6 +355,7 @@ COPY infrastructure/docker/dev/Caddyfile /etc/caddy/Caddyfile   //Kopiert mein C
 ```
 
 ### Dockerfile_backend (prod):
+
 ```
 FROM node:alpine
 RUN apk --no-cache add ca-certificates wget gcompat bash
@@ -360,6 +372,7 @@ ENTRYPOINT ["/opt/bin/entrypoint"]
 ```
 
 ### Dockerfile_frontend (prod):
+
 ```
 FROM docker-registry-mirror.netcetera.com/node:21 AS build
 COPY ncaleague-frontend/ /ncaleague-frontend/
@@ -378,21 +391,25 @@ COPY infrastructure/docker/prod/Caddyfile /etc/caddy/Caddyfile
 Jetzt kann ich die Images bauen. Ich benutze buildx, weil ich das Plattform noch definieren muss (Plattform vom Server, also linux/amd64):
 
 ### Dev backend:
+
 ```
 docker buildx build --platform linux/amd64 -f Dockerfile_backend -t ghcr.io/ncaleague/nca-225-2/ncaleague/ncaleague_backend:latest_dev .
 ```
 
 ### Dev frontend:
+
 ```
 docker buildx build --platform linux/amd64 -f Dockerfile_frontend -t ghcr.io/ncaleague/nca-225-2/ncaleague/ncaleague_frontend:latest_dev .
 ```
 
 ### Prod backend:
+
 ```
 docker buildx build --platform linux/amd64 -f Dockerfile_backend -t ghcr.io/ncaleague/nca-225-2/ncaleague/ncaleague_backend:latest .
 ```
 
 ### Prod frontend:
+
 ```
 docker buildx build --platform linux/amd64 -f Dockerfile_frontend -t ghcr.io/ncaleague/nca-225-2/ncaleague/ncaleague_frontend:latest .
 ```

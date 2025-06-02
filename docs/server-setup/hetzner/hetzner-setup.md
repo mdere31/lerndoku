@@ -1,6 +1,7 @@
 ---
 title: "Hetzner Setup"
 ---
+
 # Hetzner Setup
 
 ## Erstellen einer VM:
@@ -76,15 +77,15 @@ Um diese zu deaktivieren, kann ich diese Befehle ausführen:
 ```
 cd /etc/ssh
 nano sshd_config        //Das ist die Konfigurationsdatei von SSH
- 
+
 //Jetzt suche ich diese Begriffe in der Datei und ändere ihre Werte (Einige sind auskommentiert, man muss also die Hashtags löschen, damit sie funktionieren):
- 
+
 PasswordAuthentication no           //Jetzt kann man nur noch mit dem SSH-Key einloggen
 PermitRootLogin no                  //Root-Login ist deaktiviert, man muss zuerst als ein User einloggen, dann User ändern
 KbdInteractiveAuthentication no     //Mit dem kann man einloggen, indem man einige "Challenges" macht, z.B. Fragen beantworten. Sollte nicht erlaubt sein.
- 
+
 //Jetzt muss ich die Service neustarten, weil ich einiges geändert habe:
- 
+
 sudo service ssh restart
 ```
 
@@ -131,7 +132,7 @@ sudo systemctl enable unattended-upgrades --now
 sudo nano /etc/apt/apt.conf.d/20auto-upgrades           //Die Konfigurationsdatei ändern.
 
 //Add this line to the config file:
- 
+
 APT::Periodic::Unattended-Upgrade"1";                   //Ermöglicht unbeaufsichtigte Paketaktualisierungen, insbesondere Sicherheitsupdates. "1" bedeutet, dass es täglich durchgeführt wird.
 ```
 
@@ -143,21 +144,21 @@ Dieses Tool schaut die Protokolle von SSH und sperrt eine IP-Adresse, wenn mehre
 sudo apt-get install fail2ban -y
 sudo systemctl enable fail2ban --now
 sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local        //Die Hauptkonfigurationsdatei wird bei einem Update wahrscheinlich überschrieben. Daher ist es besser, eine Kopie davon zu erstellen und die Änderungen dort vorzunehmen.
- 
+
 sudo apt install sendmail -y                                    //Wird benutzt, um Mails zu schicken.
 sudo systemctl enable sendmail --now
- 
+
 //Jetzt muss ich diese Zeilen finden und ändern (in jail.local):
- 
+
 destemail = ncaleague@netcetera.com
 sender = fail2ban@ncaleague.app
- 
+
 //Diese Zeile muss ich noch hinzufügen:
- 
+
 action = %(action_mwl)s                                         //Eine Mail wird mit einer Datei im Anhang gesendet, welche alle Informationen enthält.
- 
+
 //Um jemanden zu entsperren:
- 
+
 sudo fail2ban-client set sshd unbanip <ip-address>
 ```
 
