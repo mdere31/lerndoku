@@ -71,107 +71,96 @@ Ich kann diese drei deaktivieren, um das Login-Security zu verbessern:
 - Disable root login
 - Disable challenge-response authentication
 
-To disable these, we have to connect to our VM and call these commands:
+Um diese zu deaktivieren, kann ich diese Befehle ausführen:
 
 ```
-cd /etc/ssh             //Here, we can find the configuration file of the SSH service
-nano sshd_config        //This is the configuration file, we will be changing it a bit
+cd /etc/ssh
+nano sshd_config        //Das ist die Konfigurationsdatei von SSH
  
-//Find these variables and change the values to these (if they are commented, you have to uncomment them by deleting the hashtag (#), or else they won't work):
+//Jetzt suche ich diese Begriffe in der Datei und ändere ihre Werte (Einige sind auskommentiert, man muss also die Hashtags löschen, damit sie funktionieren):
  
-PasswordAuthentication no           //Disable password authentication, you can log in with your private key.
-PermitRootLogin no                  //Can't log in as root anymore.
-KbdInteractiveAuthentication no     //The new version of challenge-response authentication, which allows users to do some "challenges", like answering questions, to log in. Should be disabled.
+PasswordAuthentication no           //Jetzt kann man nur noch mit dem SSH-Key einloggen
+PermitRootLogin no                  //Root-Login ist deaktiviert, man muss zuerst als ein User einloggen, dann User ändern
+KbdInteractiveAuthentication no     //Mit dem kann man einloggen, indem man einige "Challenges" macht, z.B. Fragen beantworten. Sollte nicht erlaubt sein.
  
-//After saving the file, restart the SSH service:
+//Jetzt muss ich die Service neustarten, weil ich einiges geändert habe:
  
 sudo service ssh restart
 ```
 
 ### Second Firewall (ufw)
 
-There is also a second firewall, which is the firewall of our VM. We can configure it using the ufw (Uncomplicated Firewall) commands:
+Es gibt noch eine zweite Firewall, also die Firewall von VM selber. Man kann es mit dem "ufw" (Uncomplicated Firewall) konfigurieren:
 
 ```
-IMPORTANT: Call these commands as root or add sudo to each command, or else you can't change anything!
-ufw enable                                      //Enable the service.
-ufw allow 22/tcp                                //Allow port 22 from everywhere (for SSH connections).
-ufw allow 443/tcp                               //Allow port 443 from everywhere (for HTTPS connections).
-ufw allow from <your-ip> to any port 8080     //Allow port 8080 (Adminer port) from your IP address.
-ufw reload                                      //Apply changes.
+WICHTIG: Entweder diese Befehle als root ausführen, oder vorne noch "sudo" hinzufügen, sonst funktioniert es nicht!
+ufw enable                                      //Service anschalten
+ufw allow 22/tcp                                //Port 22 erlauben (SSH)
+ufw allow 443/tcp                               //Port 443 erlauben (HTTPS)
+ufw allow from <your-ip> to any port 8080       //Port 8080 erlauben nur für eigene IP-Adresse (Adminer)
+ufw reload                                      //Service neustarten
 ```
 
-The ufw will block all other ports from incoming traffic by default and allow all ports from outgoing traffic.
+Die Firewall funktioniert ähnlich wie die von Hetzner, es erlaubt nur die Ports, die ich geöffnet habe, und alles andere ist dann nicht erlaubt.
 
 ### Audit
 
-Audit is a tool for monitoring and logging system events. We can use it to see detailed information about various system activities, such as file access, system calls, and user activity. By default, it logs critical system events, which include system calls (file access and changes), login/logout events and audit daemon start/stop. We are going to install it and add one more rule to it:
+Audit ist ein Tool zur Überwachung und Protokollierung von Systemereignissen. Ich werde es verwenden, um zu schauen, wer was auf dem Server macht. Als default schreibt es kritische Systemereignisse (z.B. Dateizugriffe und Dateiänderungen), Login/Logouts und das Starten/Stoppen von audit selber. Ich werde es installieren und noch eine Regel hinzufügen:
 
 ```
-sudo apt install auditd -y              //Install audit daemon. -y automatically confirms any prompts during installation.
-sudo systemctl enable auditd --now      //Enable the service. --now enables the service immediately, not only at the reboot.
-sudo auditctl -w /etc/passwd -p wa      //Add /etc/passwd to the watched files list. This file includes informations about users and password and this way, if someone changes password, we will get a log.
+sudo apt install auditd -y
+sudo systemctl enable auditd --now      //Mit "--now" wird es direkt gestartet, und nicht erst nach einem Reboot
+sudo auditctl -w /etc/passwd -p wa      //"/etc/passwd" zur Liste der überwachten Dateien hinzufügen. Diese Datei enthält Informationen über Benutzer und Passwörter. So kann ich sehen, wenn jemand sein Passwort ändert.
 ```
 
-The logs will be saved in /var/log/audit/audit.log . We can see them with this command:
+Diese Logs werden hier gespeichert: "/var/log/audit/audit.log". Ich kann diese Datei mit diesem Befehl anschauen:
 
 ```
 sudo cat /var/log/audit/audit.log
 ```
 
-or use other commands like ausearch (searches for a specific event) or aureport (gives a summarized report).
+oder mit anderen Befehlen von audit wie z.B. ausearch (wenn ich ein spezifisches Event suche) oder aureport (wenn ich einen zusammenfassenden Bericht brauche).
 
 ### Unattended-Upgrades
 
-This tool will regularly search for updates and install them. To use it, we need to call this commands:
+Dieser Tool wird immer nach Updates suchen und die Apps aktualisieren:
 
 ```
-sudo apt install unattended-upgrades -y                 //Install unattended-upgrades. -y automatically confirms any prompts during installation.
-sudo systemctl enable unattended-upgrades --now         //Enable the service. --now enables the service immediately, not only at the reboot.
-sudo nano /etc/apt/apt.conf.d/20auto-upgrades           //Change the config file.
+sudo apt install unattended-upgrades -y
+sudo systemctl enable unattended-upgrades --now
+sudo nano /etc/apt/apt.conf.d/20auto-upgrades           //Die Konfigurationsdatei ändern.
 
 //Add this line to the config file:
  
-APT::Periodic::Unattended-Upgrade"1";                   //Enables unattended upgrades for packages, particularly security updates. "1" means it will be done daily.
+APT::Periodic::Unattended-Upgrade"1";                   //Ermöglicht unbeaufsichtigte Paketaktualisierungen, insbesondere Sicherheitsupdates. "1" bedeutet, dass es täglich durchgeführt wird.
 ```
 
 ### Fail2Ban
 
-This tool looks for the logs of SSH and bans an IP address if they try to login and fail many times. By default, it bans for 10 minutes, and gives 5 attempts of logging in. For SSH, the default attempts are 3 times. It can also send an email when someone gets banned. We will install and configure it now:
+Dieses Tool schaut die Protokolle von SSH und sperrt eine IP-Adresse, wenn mehrere fehlgeschlagene Anmeldeversuche festgestellt werden. Als default wird es eine IP-Adresse erst dann sperren (für zehn Minuten), wenn jemand fünf Mal nicht schafft, einzuloggen. Wenn man mit SSH versucht, einzuloggen, dann hat man nur drei Versuche. Es kann auch eine Mail schicken, wenn jemand gesperrt wird:
 
 ```
-sudo apt-get install fail2ban -y                                //Install fail2ban. -y automatically confirms any prompts during installation. 
-sudo systemctl enable fail2ban --now                            //Enable the service. --now enables the service immediately, not only at the reboot.
-sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local        //The main config file will probably be overwritten in an update, so it is better to make a copy and change things there.
+sudo apt-get install fail2ban -y
+sudo systemctl enable fail2ban --now
+sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local        //Die Hauptkonfigurationsdatei wird bei einem Update wahrscheinlich überschrieben. Daher ist es besser, eine Kopie davon zu erstellen und die Änderungen dort vorzunehmen.
  
-sudo apt install sendmail -y                                    //Install sendmail. Will be used to send mails. -y automatically confirms any prompts during installation. 
-sudo systemctl enable sendmail --now                            //Enable the service. --now enables the service immediately, not only at the reboot.
+sudo apt install sendmail -y                                    //Wird benutzt, um Mails zu schicken.
+sudo systemctl enable sendmail --now
  
-//Find and change these lines:
+//Jetzt muss ich diese Zeilen finden und ändern (in jail.local):
  
-destemail = ncaleague@netcetera.com                             //Sends a mail to this address if someone gets banned.
+destemail = ncaleague@netcetera.com
 sender = fail2ban@ncaleague.app
  
-//Add this line:
+//Diese Zeile muss ich noch hinzufügen:
  
-action = %(action_mwl)s                                         //Mail will be sent with the logs in attachments.
+action = %(action_mwl)s                                         //Eine Mail wird mit einer Datei im Anhang gesendet, welche alle Informationen enthält.
  
-//To unban someone:
+//Um jemanden zu entsperren:
  
 sudo fail2ban-client set sshd unbanip <ip-address>
 ```
 
-### Permissions
-
-We will change the permission settings of our Docker volumes so that only root has permissions:
-
-```
-sudo chmod 700 /var/lib/docker/volumes/caddy-data
-sudo chmod 700 /var/lib/docker/volumes/caddy-config
-```
-
-700 means that the owner has full permissions (read, write and execute, 7 for owner), but the group members and others don't have any (0 for group members and 0 for others). See https://en.wikipedia.org/wiki/Chmod#Numerical_permissions for more information about chmod and its numbers.
-
 ---
 
-Hetzner server setup is done, you can now follow the other instructions to deploy your app with Docker and Caddy.
+Hetzner Server-Setup ist fertig, es geht aber weiter mit dem "Docker and Caddy Setup" und "Infrastructure Setup".
