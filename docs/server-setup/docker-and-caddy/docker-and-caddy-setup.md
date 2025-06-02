@@ -1,5 +1,5 @@
 ---
-title: "Docker and Caddy Setup"
+title: Docker and Caddy Setup
 sidebar_position: 3
 ---
 

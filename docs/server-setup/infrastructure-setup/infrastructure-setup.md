@@ -1,5 +1,5 @@
 ---
-title: "Infrastructure Setup"
+title: Infrastructure Setup
 sidebar_position: 2
 ---
 

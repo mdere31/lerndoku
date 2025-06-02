@@ -1,5 +1,5 @@
 ---
-title: "Hetzner Setup"
+title: Hetzner Setup
 sidebar_position: 1
 ---
 
