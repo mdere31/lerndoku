@@ -1,5 +1,6 @@
 ---
 title: "Hetzner Setup"
+sidebar_position: 1
 ---
 
 # Hetzner Setup
