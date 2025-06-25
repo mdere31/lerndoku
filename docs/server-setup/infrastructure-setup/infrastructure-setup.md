@@ -56,7 +56,7 @@ ncaleague
       └─ entrypoint.sh
 ```
 
-## Erstellen der Dateien
+## Dateien Erstellen
 
 ### Caddyfiles
 
@@ -387,7 +387,7 @@ WORKDIR /data
 COPY infrastructure/docker/prod/Caddyfile /etc/caddy/Caddyfile
 ```
 
-## Bauen der Images
+## Images Bauen
 
 Jetzt kann ich die Images bauen. Ich benutze buildx, weil ich das Plattform noch definieren muss (Plattform vom Server, also linux/amd64):
 
@@ -415,7 +415,7 @@ docker buildx build --platform linux/amd64 -f Dockerfile_backend -t ghcr.io/ncal
 docker buildx build --platform linux/amd64 -f Dockerfile_frontend -t ghcr.io/ncaleague/nca-225-2/ncaleague/ncaleague_frontend:latest .
 ```
 
-## Pushen der Images
+## Images Pushen
 
 Ich muss nur noch die Images pushen, damit ich sie nachher auf dem Server pullen kann. Ich muss mich aber bei der Registry anmelden (mit dem Github-Username und dem Access Token):
 

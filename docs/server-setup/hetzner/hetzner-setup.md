@@ -5,7 +5,7 @@ sidebar_position: 1
 
 # Hetzner Setup
 
-## Erstellen einer VM:
+## Eine VM Erstellen
 
 Ich erstelle eine VM und lasse mein Projekt darauf laufen.
 
