@@ -165,4 +165,4 @@ sudo fail2ban-client set sshd unbanip <ip-address>
 
 ---
 
-Hetzner Server-Setup ist fertig, es geht aber weiter mit dem "Docker and Caddy Setup" und "Infrastructure Setup".
+Hetzner Server-Setup ist fertig, es geht aber weiter mit dem "Infrastructure Setup" zuerst und dann "Docker and Caddy Setup".
