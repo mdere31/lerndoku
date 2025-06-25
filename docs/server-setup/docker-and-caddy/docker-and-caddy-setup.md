@@ -47,41 +47,49 @@ mkdir watchtower //Ein Container, welches andere Containers aktualisiert
 Ich muss nur noch meine Dateien kopieren, die ich vorher geschrieben habe. Dafür benutze ich den Befehl "scp" (Secure Copy) und noch meinen privaten Schlüssel. Um diese Befehle direkt ausführen zu können, muss man in Ordner gehen, wo die Dateien sind (z.B. in "ncaleague/infrastructure/docker/caddy-central" für Caddyfile von Central-Container):
 
 ## central-caddyfile:
+
 ```
 scp -i /path/to/key/my_key1 Caddyfile mde@ncaleague.app:/home/docker-images/docker-compose-files/central/
 ```
 
 ## central-compose:
+
 ```
 scp -i /path/to/key/my_key1 docker-compose.yml mde@ncaleague.app:/home/docker-images/docker-compose-files/central/
 ```
 
 ## dev-compose:
+
 ```
 scp -i /path/to/key/my_key1 docker-compose.yml mde@ncaleague.app:/home/docker-images/docker-compose-files/dev/
 ```
 
 ## dev-environment:
+
 ```
 scp -i /path/to/key/my_key1 .env.development mde@ncaleague.app:/home/docker-images/docker-compose-files/dev/
 ```
 
 ## prod-compose:
+
 ```
 scp -i /path/to/key/my_key1 docker-compose.yml mde@ncaleague.app:/home/docker-images/docker-compose-files/prod/
 ```
 
 ## prod-environment:
+
 ```
 scp -i /path/to/key/my_key1 .env.production mde@ncaleague.app:/home/docker-images/docker-compose-files/prod/
 ```
 
 ## watchtower-compose:
+
 ```
 scp -i /path/to/key/my_key1 docker-compose.yml mde@ncaleague.app:/home/docker-images/docker-compose-files/watchtower/
 ```
 
 ## watchtower-environment:
+
 ```
 scp -i /path/to/key/my_key1 .env.watchtower mde@ncaleague.app:/home/docker-images/docker-compose-files/watchtower/
 ```
