@@ -3,6 +3,8 @@ title: Hetzner Setup
 sidebar_position: 1
 ---
 
+<div class="hetzner-content-stack">
+
 # Hetzner Setup
 
 ## Eine VM Erstellen
@@ -166,3 +168,5 @@ sudo fail2ban-client set sshd unbanip <ip-address>
 ---
 
 Hetzner Server-Setup ist fertig, es geht aber weiter mit dem "Infrastructure Setup" zuerst und dann "Docker and Caddy Setup".
+
+</div>
